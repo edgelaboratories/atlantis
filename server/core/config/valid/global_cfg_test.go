@@ -661,7 +661,7 @@ policies:
 			var global valid.GlobalCfg
 			if c.gCfg != "" {
 				path := filepath.Join(tmp, "config.yaml")
-				Ok(t, os.WriteFile(path, []byte(c.gCfg), 0600))
+				Ok(t, os.WriteFile(path, []byte(c.gCfg), 0o600))
 				var err error
 				globalCfgArgs := valid.GlobalCfgArgs{
 					AllowRepoCfg:  false,
@@ -669,7 +669,7 @@ policies:
 					ApprovedReq:   false,
 					UnDivergedReq: false,
 				}
-				global, err = (&config.ParserValidator{}).ParseGlobalCfg(path, valid.NewGlobalCfgFromArgs(globalCfgArgs))
+				global, err = config.NewParserValidator().ParseGlobalCfg(path, valid.NewGlobalCfgFromArgs(globalCfgArgs))
 				Ok(t, err)
 			} else {
 				globalCfgArgs := valid.GlobalCfgArgs{
@@ -832,7 +832,7 @@ repos:
 			var global valid.GlobalCfg
 			if c.gCfg != "" {
 				path := filepath.Join(tmp, "config.yaml")
-				Ok(t, os.WriteFile(path, []byte(c.gCfg), 0600))
+				Ok(t, os.WriteFile(path, []byte(c.gCfg), 0o600))
 				var err error
 				globalCfgArgs := valid.GlobalCfgArgs{
 					AllowRepoCfg:  false,
@@ -841,7 +841,7 @@ repos:
 					UnDivergedReq: false,
 				}
 
-				global, err = (&config.ParserValidator{}).ParseGlobalCfg(path, valid.NewGlobalCfgFromArgs(globalCfgArgs))
+				global, err = config.NewParserValidator().ParseGlobalCfg(path, valid.NewGlobalCfgFromArgs(globalCfgArgs))
 				Ok(t, err)
 			} else {
 				globalCfgArgs := valid.GlobalCfgArgs{
