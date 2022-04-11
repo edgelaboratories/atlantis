@@ -745,7 +745,7 @@ projects:
 - dir: .
   workspace: staging
 `
-	err := os.WriteFile(filepath.Join(repoDir, config.AtlantisYAMLFilename), []byte(yamlCfg), 0o600)
+	err := os.WriteFile(filepath.Join(repoDir, config.DefaultAtlantisYAMLFilename), []byte(yamlCfg), 0o600)
 	Ok(t, err)
 
 	When(workingDir.Clone(
@@ -952,7 +952,7 @@ projects:
 			"project1": map[string]interface{}{
 				"main.tf": fmt.Sprintf(baseVersionConfig, exactSymbols[0]),
 			},
-			config.AtlantisYAMLFilename: atlantisYamlContent,
+			config.DefaultAtlantisYAMLFilename: atlantisYamlContent,
 		},
 		ModifiedFiles: []string{"project1/main.tf", "project2/main.tf"},
 		Exp: map[string][]int{
@@ -965,7 +965,7 @@ projects:
 			"project1": map[string]interface{}{
 				"main.tf": nil,
 			},
-			config.AtlantisYAMLFilename: atlantisYamlContent,
+			config.DefaultAtlantisYAMLFilename: atlantisYamlContent,
 		},
 		ModifiedFiles: []string{"project1/main.tf"},
 		Exp: map[string][]int{
