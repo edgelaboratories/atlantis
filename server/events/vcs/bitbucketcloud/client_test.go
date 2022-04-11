@@ -70,7 +70,7 @@ func TestClient_GetModifiedFilesPagination(t *testing.T) {
 	defer testServer.Close()
 
 	serverURL = testServer.URL
-	client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io")
+	client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io", "")
 	client.BaseURL = testServer.URL
 
 	files, err := client.GetModifiedFiles(models.Repo{
@@ -131,7 +131,7 @@ func TestClient_GetModifiedFilesOldNil(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io")
+	client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io", "")
 	client.BaseURL = testServer.URL
 
 	files, err := client.GetModifiedFiles(models.Repo{
@@ -197,7 +197,7 @@ func TestClient_PullIsApproved(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io")
+			client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io", "")
 			client.BaseURL = testServer.URL
 
 			repo, err := models.NewRepo(models.BitbucketServer, "owner/repo", "https://bitbucket.org/owner/repo.git", "user", "token")
@@ -322,7 +322,7 @@ func TestClient_PullIsMergeable(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io")
+			client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io", "")
 			client.BaseURL = testServer.URL
 
 			actMergeable, err := client.PullIsMergeable(models.Repo{
@@ -342,11 +342,10 @@ func TestClient_PullIsMergeable(t *testing.T) {
 			Equals(t, c.ExpMergeable, actMergeable)
 		})
 	}
-
 }
 
 func TestClient_MarkdownPullLink(t *testing.T) {
-	client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io")
+	client := bitbucketcloud.NewClient(http.DefaultClient, "user", "pass", "runatlantis.io", "")
 	pull := models.PullRequest{Num: 1}
 	s, _ := client.MarkdownPullLink(pull)
 	exp := "#1"

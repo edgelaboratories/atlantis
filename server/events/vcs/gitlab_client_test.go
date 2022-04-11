@@ -56,7 +56,7 @@ func TestNewGitlabClient_BaseURL(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Hostname, func(t *testing.T) {
 			log := logging.NewNoopLogger(t)
-			client, err := NewGitlabClient(c.Hostname, "token", log)
+			client, err := NewGitlabClient(c.Hostname, "token", log, "")
 			Ok(t, err)
 			Equals(t, c.ExpBaseURL, client.Client.BaseURL().String())
 		})
@@ -251,7 +251,7 @@ func TestGitlabClient_UpdateStatus(t *testing.T) {
 func TestGitlabClient_MarkdownPullLink(t *testing.T) {
 	gitlabClientUnderTest = true
 	defer func() { gitlabClientUnderTest = false }()
-	client, err := NewGitlabClient("gitlab.com", "token", nil)
+	client, err := NewGitlabClient("gitlab.com", "token", nil, "")
 	Ok(t, err)
 	pull := models.PullRequest{Num: 1}
 	s, _ := client.MarkdownPullLink(pull)
