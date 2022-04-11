@@ -1682,7 +1682,7 @@ func TestParserValidator_ParseGlobalCfgJSON(t *testing.T) {
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
-			pv := &config.NewParserValidator()
+			pv := config.NewParserValidator()
 			globalCfgArgs := valid.GlobalCfgArgs{
 				AllowRepoCfg:  false,
 				MergeableReq:  false,

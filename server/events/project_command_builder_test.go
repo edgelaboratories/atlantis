@@ -135,7 +135,7 @@ projects:
 			vcsClient := vcsmocks.NewMockClient()
 			When(vcsClient.GetModifiedFiles(matchers.AnyModelsRepo(), matchers.AnyModelsPullRequest())).ThenReturn([]string{"main.tf"}, nil)
 			if c.AtlantisYAML != "" {
-				err := os.WriteFile(filepath.Join(tmpDir, config.AtlantisYAMLFilename), []byte(c.AtlantisYAML), 0o600)
+				err := os.WriteFile(filepath.Join(tmpDir, config.DefaultAtlantisYAMLFilename), []byte(c.AtlantisYAML), 0o600)
 				Ok(t, err)
 			}
 
@@ -403,7 +403,7 @@ projects:
 				vcsClient := vcsmocks.NewMockClient()
 				When(vcsClient.GetModifiedFiles(matchers.AnyModelsRepo(), matchers.AnyModelsPullRequest())).ThenReturn([]string{"main.tf"}, nil)
 				if c.AtlantisYAML != "" {
-					err := os.WriteFile(filepath.Join(tmpDir, config.AtlantisYAMLFilename), []byte(c.AtlantisYAML), 0o600)
+					err := os.WriteFile(filepath.Join(tmpDir, config.DefaultAtlantisYAMLFilename), []byte(c.AtlantisYAML), 0o600)
 					Ok(t, err)
 				}
 
@@ -558,7 +558,7 @@ projects:
 			vcsClient := vcsmocks.NewMockClient()
 			When(vcsClient.GetModifiedFiles(matchers.AnyModelsRepo(), matchers.AnyModelsPullRequest())).ThenReturn(c.ModifiedFiles, nil)
 			if c.AtlantisYAML != "" {
-				err := os.WriteFile(filepath.Join(tmpDir, config.AtlantisYAMLFilename), []byte(c.AtlantisYAML), 0o600)
+				err := os.WriteFile(filepath.Join(tmpDir, config.DefaultAtlantisYAMLFilename), []byte(c.AtlantisYAML), 0o600)
 				Ok(t, err)
 			}
 
