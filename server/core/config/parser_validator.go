@@ -27,7 +27,7 @@ type ParserValidator struct {
 // NewParserValidator creates a validator to parse the configuration.
 func NewParserValidator(atlantisYAMLFilenames ...string) *ParserValidator {
 	atlantisYAMLFilename := DefaultAtlantisYAMLFilename
-	if len(atlantisYAMLFilename) == 0 && atlantisYAMLFilenames[0] != "" {
+	if len(atlantisYAMLFilenames) != 0 && atlantisYAMLFilenames[0] != "" {
 		atlantisYAMLFilename = atlantisYAMLFilenames[0]
 	}
 
