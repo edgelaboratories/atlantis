@@ -146,7 +146,6 @@ type WebhookConfig struct {
 // for the server CLI command because it injects all the dependencies.
 func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 	logger, err := logging.NewStructuredLoggerFromLevel(userConfig.ToLogLevel())
-
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +165,7 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 		policyChecksEnabled = true
 	}
 
-	validator := &cfg.ParserValidator{}
+	validator := cfg.NewParserValidator(userConfig.AtlantisYAMLFilename)
 
 	globalCfg := valid.NewGlobalCfgFromArgs(
 		valid.GlobalCfgArgs{
@@ -189,7 +188,6 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 	}
 
 	statsScope, closer, err := metrics.NewScope(globalCfg.Metrics, logger, userConfig.StatsNamespace)
-
 	if err != nil {
 		return nil, errors.Wrapf(err, "instantiating metrics scope")
 	}
@@ -224,7 +222,7 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 		}
 
 		var err error
-		rawGithubClient, err := vcs.NewGithubClient(userConfig.GithubHostname, githubCredentials, logger)
+		rawGithubClient, err := vcs.NewGithubClient(userConfig.GithubHostname, githubCredentials, logger, userConfig.AtlantisYAMLFilename)
 		if err != nil {
 			return nil, err
 		}
@@ -234,7 +232,7 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 	if userConfig.GitlabUser != "" {
 		supportedVCSHosts = append(supportedVCSHosts, models.Gitlab)
 		var err error
-		gitlabClient, err = vcs.NewGitlabClient(userConfig.GitlabHostname, userConfig.GitlabToken, logger)
+		gitlabClient, err = vcs.NewGitlabClient(userConfig.GitlabHostname, userConfig.GitlabToken, logger, userConfig.AtlantisYAMLFilename)
 		if err != nil {
 			return nil, err
 		}
@@ -246,7 +244,9 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 				http.DefaultClient,
 				userConfig.BitbucketUser,
 				userConfig.BitbucketToken,
-				userConfig.AtlantisURL)
+				userConfig.AtlantisURL,
+				userConfig.AtlantisYAMLFilename,
+			)
 		} else {
 			supportedVCSHosts = append(supportedVCSHosts, models.BitbucketServer)
 			var err error
@@ -255,7 +255,9 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 				userConfig.BitbucketUser,
 				userConfig.BitbucketToken,
 				userConfig.BitbucketBaseURL,
-				userConfig.AtlantisURL)
+				userConfig.AtlantisURL,
+				userConfig.AtlantisYAMLFilename,
+			)
 			if err != nil {
 				return nil, errors.Wrapf(err, "setting up Bitbucket Server client")
 			}
@@ -265,7 +267,7 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 		supportedVCSHosts = append(supportedVCSHosts, models.AzureDevops)
 
 		var err error
-		azuredevopsClient, err = vcs.NewAzureDevopsClient(userConfig.AzureDevOpsHostname, userConfig.AzureDevopsUser, userConfig.AzureDevopsToken)
+		azuredevopsClient, err = vcs.NewAzureDevopsClient(userConfig.AzureDevOpsHostname, userConfig.AzureDevopsUser, userConfig.AzureDevopsToken, userConfig.AtlantisYAMLFilename)
 		if err != nil {
 			return nil, err
 		}
@@ -322,13 +324,11 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 	commitStatusUpdater := &events.DefaultCommitStatusUpdater{Client: vcsClient, StatusName: userConfig.VCSStatusName}
 
 	binDir, err := mkSubDir(userConfig.DataDir, BinDirName)
-
 	if err != nil {
 		return nil, err
 	}
 
 	cacheDir, err := mkSubDir(userConfig.DataDir, TerraformPluginCacheDirName)
-
 	if err != nil {
 		return nil, err
 	}
@@ -507,7 +507,6 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 	)
 
 	showStepRunner, err := runtime.NewShowStepRunner(terraformClient, defaultTfVersion)
-
 	if err != nil {
 		return nil, errors.Wrap(err, "initializing show step runner")
 	}
@@ -516,7 +515,6 @@ func NewServer(userConfig UserConfig, config Config) (*Server, error) {
 		defaultTfVersion,
 		policy.NewConfTestExecutorWorkflow(logger, binDir, &terraform.DefaultDownloader{}),
 	)
-
 	if err != nil {
 		return nil, errors.Wrap(err, "initializing policy check runner")
 	}
@@ -918,7 +916,7 @@ func (s *Server) Index(w http.ResponseWriter, _ *http.Request) {
 		Locked:        applyCmdLock.Locked,
 		TimeFormatted: applyCmdLock.Time.Format("02-01-2006 15:04:05"),
 	}
-	//Sort by date - newest to oldest.
+	// Sort by date - newest to oldest.
 	sort.SliceStable(lockResults, func(i, j int) bool { return lockResults[i].Time.After(lockResults[j].Time) })
 
 	err = s.IndexTemplate.Execute(w, templates.IndexData{
@@ -934,7 +932,7 @@ func (s *Server) Index(w http.ResponseWriter, _ *http.Request) {
 
 func mkSubDir(parentDir string, subDir string) (string, error) {
 	fullDir := filepath.Join(parentDir, subDir)
-	if err := os.MkdirAll(fullDir, 0700); err != nil {
+	if err := os.MkdirAll(fullDir, 0o700); err != nil {
 		return "", errors.Wrapf(err, "unable to create dir %q", fullDir)
 	}
 

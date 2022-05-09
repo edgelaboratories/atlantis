@@ -13,11 +13,12 @@ import (
 
 // GithubAppController handles the creation and setup of a new GitHub app
 type GithubAppController struct {
-	AtlantisURL         *url.URL
-	Logger              logging.SimpleLogging
-	GithubSetupComplete bool
-	GithubHostname      string
-	GithubOrg           string
+	AtlantisURL          *url.URL
+	Logger               logging.SimpleLogging
+	GithubSetupComplete  bool
+	GithubHostname       string
+	GithubOrg            string
+	AtlantisYAMLFilename string
 }
 
 type githubWebhook struct {
@@ -42,7 +43,6 @@ type githubAppRequest struct {
 // A code query parameter is exchanged for this app's ID, key, and webhook_secret
 // Implements https://developer.github.com/apps/building-github-apps/creating-github-apps-from-a-manifest/#implementing-the-github-app-manifest-flow
 func (g *GithubAppController) ExchangeCode(w http.ResponseWriter, r *http.Request) {
-
 	if g.GithubSetupComplete {
 		g.respond(w, logging.Error, http.StatusBadRequest, "Atlantis already has GitHub credentials")
 		return
@@ -55,7 +55,7 @@ func (g *GithubAppController) ExchangeCode(w http.ResponseWriter, r *http.Reques
 
 	g.Logger.Debug("Exchanging GitHub app code for app credentials")
 	creds := &vcs.GithubAnonymousCredentials{}
-	client, err := vcs.NewGithubClient(g.GithubHostname, creds, g.Logger)
+	client, err := vcs.NewGithubClient(g.GithubHostname, creds, g.Logger, g.AtlantisYAMLFilename)
 	if err != nil {
 		g.respond(w, logging.Error, http.StatusInternalServerError, "Failed to exchange code for github app: %s", err)
 		return
@@ -84,7 +84,6 @@ func (g *GithubAppController) ExchangeCode(w http.ResponseWriter, r *http.Reques
 
 // New redirects the user to create a new GitHub app
 func (g *GithubAppController) New(w http.ResponseWriter, r *http.Request) {
-
 	if g.GithubSetupComplete {
 		g.respond(w, logging.Error, http.StatusBadRequest, "Atlantis already has GitHub credentials")
 		return

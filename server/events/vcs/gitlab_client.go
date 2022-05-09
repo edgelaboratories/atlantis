@@ -22,8 +22,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/runatlantis/atlantis/server/core/config"
-
 	"github.com/runatlantis/atlantis/server/events/command"
 	"github.com/runatlantis/atlantis/server/events/vcs/common"
 
@@ -43,6 +41,8 @@ type GitlabClient struct {
 	Client *gitlab.Client
 	// Version is set to the server version.
 	Version *version.Version
+
+	atlantisYAMLFilename string
 }
 
 // commonMarkSupported is a version constraint that is true when this version of
@@ -54,8 +54,10 @@ var commonMarkSupported = MustConstraint(">=11.1")
 var gitlabClientUnderTest = false
 
 // NewGitlabClient returns a valid GitLab client.
-func NewGitlabClient(hostname string, token string, logger logging.SimpleLogging) (*GitlabClient, error) {
-	client := &GitlabClient{}
+func NewGitlabClient(hostname string, token string, logger logging.SimpleLogging, atlantisYAMLFilename string) (*GitlabClient, error) {
+	client := &GitlabClient{
+		atlantisYAMLFilename: atlantisYAMLFilename,
+	}
 
 	// Create the client differently depending on the base URL.
 	if hostname == "gitlab.com" {
@@ -265,7 +267,7 @@ func (g *GitlabClient) WaitForSuccessPipeline(ctx context.Context, pull models.P
 		case <-ctx.Done():
 			// validation check time out
 			cancel()
-			return //ctx.Err()
+			return // ctx.Err()
 
 		default:
 			mr, _ := g.GetMergeRequest(pull.BaseRepo.FullName, pull.Num)
@@ -366,7 +368,7 @@ func (g *GitlabClient) GetTeamNamesForUser(repo models.Repo, user models.User) (
 func (g *GitlabClient) DownloadRepoConfigFile(pull models.PullRequest) (bool, []byte, error) {
 	opt := gitlab.GetRawFileOptions{Ref: gitlab.String(pull.HeadBranch)}
 
-	bytes, resp, err := g.Client.RepositoryFiles.GetRawFile(pull.BaseRepo.FullName, config.AtlantisYAMLFilename, &opt)
+	bytes, resp, err := g.Client.RepositoryFiles.GetRawFile(pull.BaseRepo.FullName, g.atlantisYAMLFilename, &opt)
 	if resp.StatusCode == http.StatusNotFound {
 		return false, []byte{}, nil
 	}
@@ -380,4 +382,8 @@ func (g *GitlabClient) DownloadRepoConfigFile(pull models.PullRequest) (bool, []
 
 func (g *GitlabClient) SupportsSingleFileDownload(repo models.Repo) bool {
 	return true
+}
+
+func (g *GitlabClient) AtlantisYAMLFilename() string {
+	return g.atlantisYAMLFilename
 }

@@ -15,12 +15,26 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// AtlantisYAMLFilename is the name of the config file for each repo.
-const AtlantisYAMLFilename = "atlantis.yaml"
+// DefaultAtlantisYAMLFilename is the name of the config file for each repo.
+const DefaultAtlantisYAMLFilename = "atlantis.yaml"
 
 // ParserValidator parses and validates server-side repo config files and
 // repo-level atlantis.yaml files.
-type ParserValidator struct{}
+type ParserValidator struct {
+	AtlantisYAMLFilename string
+}
+
+// NewParserValidator creates a validator to parse the configuration.
+func NewParserValidator(atlantisYAMLFilenames ...string) *ParserValidator {
+	atlantisYAMLFilename := DefaultAtlantisYAMLFilename
+	if len(atlantisYAMLFilenames) != 0 && atlantisYAMLFilenames[0] != "" {
+		atlantisYAMLFilename = atlantisYAMLFilenames[0]
+	}
+
+	return &ParserValidator{
+		AtlantisYAMLFilename: atlantisYAMLFilename,
+	}
+}
 
 // HasRepoCfg returns true if there is a repo config (atlantis.yaml) file
 // for the repo at absRepoDir.
@@ -30,10 +44,10 @@ func (p *ParserValidator) HasRepoCfg(absRepoDir string) (bool, error) {
 	const invalidExtensionFilename = "atlantis.yml"
 	_, err := os.Stat(p.repoCfgPath(absRepoDir, invalidExtensionFilename))
 	if err == nil {
-		return false, errors.Errorf("found %q as config file; rename using the .yaml extension - %q", invalidExtensionFilename, AtlantisYAMLFilename)
+		return false, errors.Errorf("found %q as config file; rename using the .yaml extension - %q", invalidExtensionFilename, p.AtlantisYAMLFilename)
 	}
 
-	_, err = os.Stat(p.repoCfgPath(absRepoDir, AtlantisYAMLFilename))
+	_, err = os.Stat(p.repoCfgPath(absRepoDir, p.AtlantisYAMLFilename))
 	if os.IsNotExist(err) {
 		return false, nil
 	}
@@ -44,12 +58,11 @@ func (p *ParserValidator) HasRepoCfg(absRepoDir string) (bool, error) {
 // repo at absRepoDir.
 // If there was no config file, it will return an os.IsNotExist(error).
 func (p *ParserValidator) ParseRepoCfg(absRepoDir string, globalCfg valid.GlobalCfg, repoID string) (valid.RepoCfg, error) {
-	configFile := p.repoCfgPath(absRepoDir, AtlantisYAMLFilename)
+	configFile := p.repoCfgPath(absRepoDir, p.AtlantisYAMLFilename)
 	configData, err := os.ReadFile(configFile) // nolint: gosec
-
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return valid.RepoCfg{}, errors.Wrapf(err, "unable to read %s file", AtlantisYAMLFilename)
+			return valid.RepoCfg{}, errors.Wrapf(err, "unable to read %s file", p.AtlantisYAMLFilename)
 		}
 		// Don't wrap os.IsNotExist errors because we want our callers to be
 		// able to detect if it's a NotExist err.

@@ -14,27 +14,29 @@ import (
 )
 
 type Client struct {
-	HTTPClient  *http.Client
-	Username    string
-	Password    string
-	BaseURL     string
-	AtlantisURL string
+	HTTPClient           *http.Client
+	Username             string
+	Password             string
+	BaseURL              string
+	AtlantisURL          string
+	atlantisYAMLFilename string
 }
 
 // NewClient builds a bitbucket cloud client. atlantisURL is the
 // URL for Atlantis that will be linked to from the build status icons. This
 // linking is annoying because we don't have anywhere good to link but a URL is
 // required.
-func NewClient(httpClient *http.Client, username string, password string, atlantisURL string) *Client {
+func NewClient(httpClient *http.Client, username, password, atlantisURL, atlantisYAMLFilename string) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
 	return &Client{
-		HTTPClient:  httpClient,
-		Username:    username,
-		Password:    password,
-		BaseURL:     BaseURL,
-		AtlantisURL: atlantisURL,
+		HTTPClient:           httpClient,
+		Username:             username,
+		Password:             password,
+		BaseURL:              BaseURL,
+		AtlantisURL:          atlantisURL,
+		atlantisYAMLFilename: atlantisYAMLFilename,
 	}
 }
 
@@ -265,4 +267,8 @@ func (b *Client) SupportsSingleFileDownload(models.Repo) bool {
 // if BaseRepo had one repo config file, its content will placed on the second return value
 func (b *Client) DownloadRepoConfigFile(pull models.PullRequest) (bool, []byte, error) {
 	return false, []byte{}, fmt.Errorf("Not Implemented")
+}
+
+func (b *Client) AtlantisYAMLFilename() string {
+	return b.atlantisYAMLFilename
 }

@@ -59,7 +59,7 @@ func TestClient_BasePath(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.inputURL, func(t *testing.T) {
-			client, err := bitbucketserver.NewClient(nil, "u", "p", c.inputURL, "atlantis-url")
+			client, err := bitbucketserver.NewClient(nil, "u", "p", c.inputURL, "atlantis-url", "")
 			if c.expErr != "" {
 				ErrEquals(t, c.expErr, err)
 			} else {
@@ -117,7 +117,7 @@ func TestClient_GetModifiedFilesPagination(t *testing.T) {
 	defer testServer.Close()
 
 	serverURL = testServer.URL
-	client, err := bitbucketserver.NewClient(http.DefaultClient, "user", "pass", serverURL, "runatlantis.io")
+	client, err := bitbucketserver.NewClient(http.DefaultClient, "user", "pass", serverURL, "runatlantis.io", "")
 	Ok(t, err)
 
 	files, err := client.GetModifiedFiles(models.Repo{
@@ -158,7 +158,7 @@ func TestClient_MergePull(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client, err := bitbucketserver.NewClient(http.DefaultClient, "user", "pass", testServer.URL, "runatlantis.io")
+	client, err := bitbucketserver.NewClient(http.DefaultClient, "user", "pass", testServer.URL, "runatlantis.io", "")
 	Ok(t, err)
 
 	err = client.MergePull(models.PullRequest{
@@ -217,7 +217,7 @@ func TestClient_MergePullDeleteSourceBranch(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client, err := bitbucketserver.NewClient(http.DefaultClient, "user", "pass", testServer.URL, "runatlantis.io")
+	client, err := bitbucketserver.NewClient(http.DefaultClient, "user", "pass", testServer.URL, "runatlantis.io", "")
 	Ok(t, err)
 
 	err = client.MergePull(models.PullRequest{
@@ -245,7 +245,7 @@ func TestClient_MergePullDeleteSourceBranch(t *testing.T) {
 }
 
 func TestClient_MarkdownPullLink(t *testing.T) {
-	client, err := bitbucketserver.NewClient(nil, "u", "p", "https://base-url", "atlantis-url")
+	client, err := bitbucketserver.NewClient(nil, "u", "p", "https://base-url", "atlantis-url", "")
 	Ok(t, err)
 	pull := models.PullRequest{Num: 1}
 	s, _ := client.MarkdownPullLink(pull)

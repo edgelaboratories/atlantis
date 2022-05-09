@@ -22,11 +22,12 @@ import (
 const maxCommentLength = 32768
 
 type Client struct {
-	HTTPClient  *http.Client
-	Username    string
-	Password    string
-	BaseURL     string
-	AtlantisURL string
+	HTTPClient           *http.Client
+	Username             string
+	Password             string
+	BaseURL              string
+	AtlantisURL          string
+	atlantisYAMLFilename string
 }
 
 type DeleteSourceBranch struct {
@@ -42,7 +43,7 @@ type DeleteSourceBranch struct {
 // URL for Atlantis that will be linked to from the build status icons. This
 // linking is annoying because we don't have anywhere good to link but a URL is
 // required.
-func NewClient(httpClient *http.Client, username string, password string, baseURL string, atlantisURL string) (*Client, error) {
+func NewClient(httpClient *http.Client, username, password, baseURL, atlantisURL, atlantisYAMLFilename string) (*Client, error) {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
@@ -54,11 +55,12 @@ func NewClient(httpClient *http.Client, username string, password string, baseUR
 		return nil, fmt.Errorf("must have 'http://' or 'https://' in base url %q", baseURL)
 	}
 	return &Client{
-		HTTPClient:  httpClient,
-		Username:    username,
-		Password:    password,
-		BaseURL:     strings.TrimRight(parsedURL.String(), "/"),
-		AtlantisURL: atlantisURL,
+		HTTPClient:           httpClient,
+		Username:             username,
+		Password:             password,
+		BaseURL:              strings.TrimRight(parsedURL.String(), "/"),
+		AtlantisURL:          atlantisURL,
+		atlantisYAMLFilename: atlantisYAMLFilename,
 	}, nil
 }
 
@@ -347,4 +349,8 @@ func (b *Client) SupportsSingleFileDownload(repo models.Repo) bool {
 // if BaseRepo had one repo config file, its content will placed on the second return value
 func (b *Client) DownloadRepoConfigFile(pull models.PullRequest) (bool, []byte, error) {
 	return false, []byte{}, fmt.Errorf("not implemented")
+}
+
+func (b *Client) AtlantisYAMLFilename() string {
+	return b.atlantisYAMLFilename
 }

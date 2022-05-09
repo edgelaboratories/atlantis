@@ -598,8 +598,8 @@ projects:
 
 			// Write and parse the global config file.
 			globalCfgPath := filepath.Join(tmp, "global.yaml")
-			Ok(t, os.WriteFile(globalCfgPath, []byte(c.globalCfg), 0600))
-			parser := &config.ParserValidator{}
+			Ok(t, os.WriteFile(globalCfgPath, []byte(c.globalCfg), 0o600))
+			parser := config.NewParserValidator()
 			globalCfgArgs := valid.GlobalCfgArgs{
 				AllowRepoCfg:  false,
 				MergeableReq:  false,
@@ -610,7 +610,7 @@ projects:
 			Ok(t, err)
 
 			if c.repoCfg != "" {
-				Ok(t, os.WriteFile(filepath.Join(tmp, "atlantis.yaml"), []byte(c.repoCfg), 0600))
+				Ok(t, os.WriteFile(filepath.Join(tmp, "atlantis.yaml"), []byte(c.repoCfg), 0o600))
 			}
 
 			builder := NewProjectCommandBuilder(
@@ -803,13 +803,13 @@ projects:
 
 			// Write and parse the global config file.
 			globalCfgPath := filepath.Join(tmp, "global.yaml")
-			Ok(t, os.WriteFile(globalCfgPath, []byte(c.globalCfg), 0600))
-			parser := &config.ParserValidator{}
+			Ok(t, os.WriteFile(globalCfgPath, []byte(c.globalCfg), 0o600))
+			parser := config.NewParserValidator()
 			globalCfg, err := parser.ParseGlobalCfg(globalCfgPath, valid.NewGlobalCfg(false, false, false))
 			Ok(t, err)
 
 			if c.repoCfg != "" {
-				Ok(t, os.WriteFile(filepath.Join(tmp, "atlantis.yaml"), []byte(c.repoCfg), 0600))
+				Ok(t, os.WriteFile(filepath.Join(tmp, "atlantis.yaml"), []byte(c.repoCfg), 0o600))
 			}
 
 			logger := logging.NewNoopLogger(t)
@@ -1028,8 +1028,8 @@ workflows:
 
 			// Write and parse the global config file.
 			globalCfgPath := filepath.Join(tmp, "global.yaml")
-			Ok(t, os.WriteFile(globalCfgPath, []byte(c.globalCfg), 0600))
-			parser := &config.ParserValidator{}
+			Ok(t, os.WriteFile(globalCfgPath, []byte(c.globalCfg), 0o600))
+			parser := config.NewParserValidator()
 			globalCfgArgs := valid.GlobalCfgArgs{
 				AllowRepoCfg:  false,
 				MergeableReq:  false,
@@ -1041,7 +1041,7 @@ workflows:
 			Ok(t, err)
 
 			if c.repoCfg != "" {
-				Ok(t, os.WriteFile(filepath.Join(tmp, "atlantis.yaml"), []byte(c.repoCfg), 0600))
+				Ok(t, os.WriteFile(filepath.Join(tmp, "atlantis.yaml"), []byte(c.repoCfg), 0o600))
 			}
 			statsScope, _, _ := metrics.NewLoggingScope(logging.NewNoopLogger(t), "atlantis")
 

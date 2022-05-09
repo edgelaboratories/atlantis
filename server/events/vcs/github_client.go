@@ -24,7 +24,6 @@ import (
 	"github.com/Laisky/graphql"
 	"github.com/google/go-github/v31/github"
 	"github.com/pkg/errors"
-	"github.com/runatlantis/atlantis/server/core/config"
 	"github.com/runatlantis/atlantis/server/events/models"
 	"github.com/runatlantis/atlantis/server/events/vcs/common"
 	"github.com/runatlantis/atlantis/server/logging"
@@ -38,12 +37,13 @@ const maxCommentLength = 65536
 
 // GithubClient is used to perform GitHub actions.
 type GithubClient struct {
-	user           string
-	client         *github.Client
-	v4MutateClient *graphql.Client
-	v4QueryClient  *githubv4.Client
-	ctx            context.Context
-	logger         logging.SimpleLogging
+	user                 string
+	client               *github.Client
+	v4MutateClient       *graphql.Client
+	v4QueryClient        *githubv4.Client
+	ctx                  context.Context
+	logger               logging.SimpleLogging
+	atlantisYAMLFilename string
 }
 
 // GithubAppTemporarySecrets holds app credentials obtained from github after creation.
@@ -61,7 +61,7 @@ type GithubAppTemporarySecrets struct {
 }
 
 // NewGithubClient returns a valid GitHub client.
-func NewGithubClient(hostname string, credentials GithubCredentials, logger logging.SimpleLogging) (*GithubClient, error) {
+func NewGithubClient(hostname string, credentials GithubCredentials, logger logging.SimpleLogging, atlantisYAMLFilename string) (*GithubClient, error) {
 	transport, err := credentials.Client()
 	if err != nil {
 		return nil, errors.Wrap(err, "error initializing github authentication transport")
@@ -111,12 +111,13 @@ func NewGithubClient(hostname string, credentials GithubCredentials, logger logg
 		return nil, errors.Wrap(err, "getting user")
 	}
 	return &GithubClient{
-		user:           user,
-		client:         client,
-		v4MutateClient: v4MutateClient,
-		v4QueryClient:  v4QueryClient,
-		ctx:            context.Background(),
-		logger:         logger,
+		user:                 user,
+		client:               client,
+		v4MutateClient:       v4MutateClient,
+		v4QueryClient:        v4QueryClient,
+		ctx:                  context.Background(),
+		logger:               logger,
+		atlantisYAMLFilename: atlantisYAMLFilename,
 	}, nil
 }
 
@@ -481,7 +482,7 @@ func (g *GithubClient) ExchangeCode(code string) (*GithubAppTemporarySecrets, er
 // if BaseRepo had one repo config file, its content will placed on the second return value
 func (g *GithubClient) DownloadRepoConfigFile(pull models.PullRequest) (bool, []byte, error) {
 	opt := github.RepositoryContentGetOptions{Ref: pull.HeadBranch}
-	fileContent, _, resp, err := g.client.Repositories.GetContents(g.ctx, pull.BaseRepo.Owner, pull.BaseRepo.Name, config.AtlantisYAMLFilename, &opt)
+	fileContent, _, resp, err := g.client.Repositories.GetContents(g.ctx, pull.BaseRepo.Owner, pull.BaseRepo.Name, g.atlantisYAMLFilename, &opt)
 
 	if resp.StatusCode == http.StatusNotFound {
 		return false, []byte{}, nil
@@ -500,4 +501,8 @@ func (g *GithubClient) DownloadRepoConfigFile(pull models.PullRequest) (bool, []
 
 func (g *GithubClient) SupportsSingleFileDownload(repo models.Repo) bool {
 	return true
+}
+
+func (g *GithubClient) AtlantisYAMLFilename() string {
+	return g.atlantisYAMLFilename
 }

@@ -17,20 +17,21 @@ import (
 
 // AzureDevopsClient represents an Azure DevOps VCS client
 type AzureDevopsClient struct {
-	Client   *azuredevops.Client
-	ctx      context.Context
-	UserName string
+	Client               *azuredevops.Client
+	ctx                  context.Context
+	UserName             string
+	atlantisYAMLFilename string
 }
 
 // NewAzureDevopsClient returns a valid Azure DevOps client.
-func NewAzureDevopsClient(hostname string, userName string, token string) (*AzureDevopsClient, error) {
+func NewAzureDevopsClient(hostname, userName, token, atlantisYAMLFilename string) (*AzureDevopsClient, error) {
 	tp := azuredevops.BasicAuthTransport{
 		Username: "",
 		Password: strings.TrimSpace(token),
 	}
 	httpClient := tp.Client()
 	httpClient.Timeout = time.Second * 10
-	var adClient, err = azuredevops.NewClient(httpClient)
+	adClient, err := azuredevops.NewClient(httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -45,9 +46,10 @@ func NewAzureDevopsClient(hostname string, userName string, token string) (*Azur
 	}
 
 	client := &AzureDevopsClient{
-		Client:   adClient,
-		UserName: userName,
-		ctx:      context.Background(),
+		Client:               adClient,
+		UserName:             userName,
+		ctx:                  context.Background(),
+		atlantisYAMLFilename: atlantisYAMLFilename,
 	}
 
 	return client, nil
@@ -390,6 +392,10 @@ func (g *AzureDevopsClient) SupportsSingleFileDownload(repo models.Repo) bool {
 
 func (g *AzureDevopsClient) DownloadRepoConfigFile(pull models.PullRequest) (bool, []byte, error) {
 	return false, []byte{}, fmt.Errorf("Not Implemented")
+}
+
+func (g *AzureDevopsClient) AtlantisYAMLFilename() string {
+	return g.atlantisYAMLFilename
 }
 
 // GitStatusContextFromSrc parses an Atlantis formatted src string into a context suitable
